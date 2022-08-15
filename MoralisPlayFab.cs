@@ -1,17 +1,17 @@
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using PlayFab.ServerModels;
-using PlayFab.Plugins.CloudScript;
 using Moralis.Network;
 using Moralis.AuthApi.Models;
 using Moralis.AuthApi.Interfaces;
-using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace PlayFab.AzureFunctions
 {
@@ -23,10 +23,12 @@ namespace PlayFab.AzureFunctions
 
         [FunctionName("ChallengeRequest")]
         public static async Task<dynamic> ChallengeRequest(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
         {
-            /* Create the function execution's context through the request */
-            var context = await FunctionContext<dynamic>.Create(req);
+            // Create the function execution's context through the request
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            // Deserialize Playfab context
+            dynamic context = JsonConvert.DeserializeObject(requestBody);
             var args = context.FunctionArgument;
 
             // Get the address from the request
@@ -83,10 +85,12 @@ namespace PlayFab.AzureFunctions
 
         [FunctionName("ChallengeVerify")]
         public static async Task<dynamic> ChallengeVerify(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequestMessage req, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
         {
-            /* Create the function execution's context through the request */
-            var context = await FunctionContext<dynamic>.Create(req);
+            // Create the function execution's context through the request
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            // Deserialize Playfab context
+            dynamic context = JsonConvert.DeserializeObject(requestBody);
             var args = context.FunctionArgument;
 
             // Get the message from the request
