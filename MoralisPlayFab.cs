@@ -11,6 +11,8 @@ using PlayFab.ServerModels;
 using Moralis.Network;
 using Moralis.AuthApi.Models;
 using Moralis.AuthApi.Interfaces;
+using Moralis.Web3Api.Models;
+using Moralis.Web3Api.Interfaces;
 using Newtonsoft.Json;
 
 namespace PlayFab.AzureFunctions
@@ -174,6 +176,169 @@ namespace PlayFab.AzureFunctions
             catch (Exception exp)
             {
                 log.LogInformation($"exp.Message: {exp.ToString()}");
+                return new BadRequestObjectResult(exp.Message);
+            }
+        }
+
+
+        [FunctionName("GetNativeBalance")]
+        public static async Task<dynamic> GetNativeBalance(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            // Create the function execution's context through the request
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            // Deserialize Playfab context
+            dynamic context = JsonConvert.DeserializeObject(requestBody);
+            var args = context.FunctionArgument;
+
+            // Get the address from the request
+            string address = null;
+            if (args != null && args["address"] != null)
+            {
+                address = args["address"].ToString().ToLower();
+            }
+
+            // Get the chainid from the request
+            int chainid = 1;
+            if (args != null && args["chainid"] != null)
+            {
+                chainid = args["chainid"];
+                int.TryParse(args["chainid"].ToString(), out chainid);
+            }
+
+            try
+            {
+                // Connect with the Moralis Authtication Server
+                Moralis.Web3Api.MoralisWeb3ApiClient.Initialize(Web3ApiUrl, ApiKey);
+                IWeb3Api web3Api = Moralis.Web3Api.MoralisWeb3ApiClient.Web3Api;
+
+                ChainList chain = (ChainList)chainid;
+
+                NativeBalance response = await web3Api.Account.GetNativeBalance(address, chain);
+
+                return new OkObjectResult(response);
+            }
+            catch (ApiException aexp)
+            {
+                log.LogDebug($"aexp.Message: {aexp.ToString()}");
+                return new BadRequestObjectResult(aexp.Message);
+            }
+            catch (Exception exp)
+            {
+                log.LogDebug($"exp.Message: {exp.ToString()}");
+                return new BadRequestObjectResult(exp.Message);
+            }
+        }
+        
+        [FunctionName("GetNfts")]
+        public static async Task<dynamic> GetNfts(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            // Create the function execution's context through the request
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            // Deserialize Playfab context
+            dynamic context = JsonConvert.DeserializeObject(requestBody);
+            var args = context.FunctionArgument;
+
+            // Get the address from the request
+            string address = null;
+            if (args != null && args["address"] != null)
+            {
+                address = args["address"].ToString().ToLower();
+            }
+
+            // Get the chainid from the request
+            int chainid = 1;
+            if (args != null && args["chainid"] != null)
+            {
+                chainid = args["chainid"];
+                int.TryParse(args["chainid"].ToString(), out chainid);
+            }
+
+            // Get the cursor from the request
+            string cursor = null;
+            if (args != null && args["cursor"] != null)
+            {
+                cursor = args["cursor"].ToString();
+            }
+
+            // Get the limit from the request
+            int limit = 1;
+            if (args != null && args["limit"] != null)
+            {
+                limit = args["limit"];
+                int.TryParse(args["limit"].ToString(), out limit);
+            }
+
+            try
+            {
+                // Connect with the Moralis Authtication Server
+                Moralis.Web3Api.MoralisWeb3ApiClient.Initialize(Web3ApiUrl, ApiKey);
+                IWeb3Api web3Api = Moralis.Web3Api.MoralisWeb3ApiClient.Web3Api;
+
+                ChainList chain = (ChainList)chainid;
+
+                NftOwnerCollection response = await web3Api.Account.GetNFTs(address, chain, cursor, null, limit);
+
+                return new OkObjectResult(response);
+            }
+            catch (ApiException aexp)
+            {
+                log.LogDebug($"aexp.Message: {aexp.ToString()}");
+                return new BadRequestObjectResult(aexp.Message);
+            }
+            catch (Exception exp)
+            {
+                log.LogDebug($"exp.Message: {exp.ToString()}");
+                return new BadRequestObjectResult(exp.Message);
+            }
+        }
+        
+        [FunctionName("GetTokenBalances")]
+        public static async Task<dynamic> GetTokenBalances(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req, ILogger log)
+        {
+            // Create the function execution's context through the request
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            // Deserialize Playfab context
+            dynamic context = JsonConvert.DeserializeObject(requestBody);
+            var args = context.FunctionArgument;
+
+            // Get the address from the request
+            string address = null;
+            if (args != null && args["address"] != null)
+            {
+                address = args["address"].ToString().ToLower();
+            }
+
+            // Get the chainid from the request
+            int chainid = 1;
+            if (args != null && args["chainid"] != null)
+            {
+                chainid = args["chainid"];
+                int.TryParse(args["chainid"].ToString(), out chainid);
+            }
+
+            try
+            {
+                // Connect with the Moralis Authtication Server
+                Moralis.Web3Api.MoralisWeb3ApiClient.Initialize(Web3ApiUrl, ApiKey);
+                IWeb3Api web3Api = Moralis.Web3Api.MoralisWeb3ApiClient.Web3Api;
+
+                ChainList chain = (ChainList)chainid;
+
+                List<Erc20TokenBalance> response = await web3Api.Account.GetTokenBalances(address, chain);
+
+                return new OkObjectResult(response);
+            }
+            catch (ApiException aexp)
+            {
+                log.LogDebug($"aexp.Message: {aexp.ToString()}");
+                return new BadRequestObjectResult(aexp.Message);
+            }
+            catch (Exception exp)
+            {
+                log.LogDebug($"exp.Message: {exp.ToString()}");
                 return new BadRequestObjectResult(exp.Message);
             }
         }
